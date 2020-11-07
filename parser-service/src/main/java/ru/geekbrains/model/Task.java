@@ -27,5 +27,4 @@ public class Task {
     public int hashCode() {
         return Objects.hash(city, country);
     }
-
 }

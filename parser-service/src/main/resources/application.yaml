@@ -9,9 +9,9 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/******}
-    username: ${SPRING_DATASOURCE_USERNAME:*****}
-    password: ${SPRING_DATASOURCE_PASSWORD:*****}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/notification}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
 
   jpa:
     generate-ddl: false

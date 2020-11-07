@@ -22,12 +22,6 @@
 
     <dependencies>
 
-<<<<<<< HEAD
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-security</artifactId>-->
-<!--        </dependency>-->
-=======
         <!--        web-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -35,7 +29,6 @@
         </dependency>
 
         <!--        security-->
->>>>>>> 4416343098c11afe11d09ce90512d9f35ec50fff
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
