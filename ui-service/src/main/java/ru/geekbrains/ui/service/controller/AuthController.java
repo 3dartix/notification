@@ -20,7 +20,10 @@ import org.springframework.web.client.RestTemplate;
 import ru.geekbrains.ui.service.bean.Token;
 import ru.geekbrains.ui.service.dto.JwtResponseToken;
 import ru.geekbrains.ui.service.validation.AuthUser;
+import ru.geekbrains.ui.service.validation.ProfileUser;
 import ru.geekbrains.ui.service.validation.RegistrationUser;
+
+import java.util.Objects;
 
 
 @Controller
@@ -39,8 +42,8 @@ public class AuthController {
     private String urlDb;
 
     private final Token token;
-    private final RestTemplate restTemplate;
     private final AuthenticationManager authenticationManager;
+    private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
 
@@ -94,8 +97,9 @@ public class AuthController {
         ResponseEntity<String> responseEntity = restTemplate
                 .exchange(urlDb + "/auth/login", HttpMethod.POST, request, String.class);
 
-        JwtResponseToken jwtResponseToken = objectMapper.readValue(responseEntity.getBody(), JwtResponseToken.class);
-        token.setToken(jwtResponseToken.getToken());
+        JwtResponseToken jwtResponseToken = objectMapper.readValue(Objects.requireNonNull(responseEntity.getBody()), JwtResponseToken.class);
+        token.setTokenValidateAndAuthentication(jwtResponseToken.getToken());
+
         log.info("set token");
         return "redirect:/home";
     }

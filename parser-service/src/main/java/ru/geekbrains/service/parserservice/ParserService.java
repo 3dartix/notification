@@ -1,10 +1,12 @@
 package ru.geekbrains.service.parserservice;
 
 import lombok.Data;
-import lombok.extern.java.Log;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+import ru.geekbrains.common.rest.ResponseMessage;
 import ru.geekbrains.model.Parser;
 import ru.geekbrains.model.Task;
 import ru.geekbrains.service.requesthandler.TaskService;
@@ -45,37 +47,44 @@ public class ParserService {
         timer.schedule(timerTask, new Date(), delay);
     }
 
-    private void checkingTasks(){
+    private void checkingTasks() {
 
         log.info("checking tasks");
 
         if (!taskService.isEmpty() && !processing) {
             log.info("start task!");
             parsers.forEach(p -> {
+                log.info("задача передана в работу");
                 p.start(taskService.peek().getCountry(), taskService.peek().getCity());
-            });
-            processing = true;
-        }
-
-        if (!taskService.isEmpty() && processing){
-            if(parsers.stream().allMatch(Parser::getProcessingStatus)){
-                log.info("processing...");
-            } else {
-                checkResult();
-                if(parsers.stream().noneMatch(Parser::getProcessingStatus)){
-                    taskService.poll();
-                    processing = false;
-                }
-            }
-        }
-
-        if(taskService.isEmpty())
-        log.info("taskService.isEmpty()");
+        });
+        processing = true;
     }
 
-    private void checkResult(){
+        if(!taskService.isEmpty()&&processing)
+
+    {
+        if (parsers.stream().allMatch(Parser::getProcessingStatus)) {
+            log.info("processing...");
+        } else {
+            checkResult();
+            if (parsers.stream().noneMatch(Parser::getProcessingStatus)) {
+                //удаляем задачу
+                log.info("удалить задачу и отправить callback о завершении парсинга");
+                String taskId = taskService.peek().getTaskId();
+                taskService.poll();
+                sendCallBack(taskId);
+                processing = false;
+            }
+        }
+    }
+
+        if(taskService.isEmpty())
+                log.info("taskService.isEmpty()");
+}
+
+    private void checkResult() {
         parsers.forEach(p -> {
-            if(!p.getProcessingStatus()){
+            if (!p.getProcessingStatus()) {
                 log.info("getting results from " + p.getName());
                 //получаем список
                 adService.saveAds(p.getResult(), p.getName());
@@ -83,8 +92,17 @@ public class ParserService {
         });
     }
 
-    public void register(Parser parser){
+    public void register(Parser parser) {
         log.info(String.format("parser %s has been registered", parser.getName()));
         parsers.add(parser);
+    }
+
+    private void sendCallBack(String taskId) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://localhost:8079")
+                .path("/task/completed/" + taskId);
+        //@GetMapping(path = "/completed/{taskId}")
+        String url = builder.build().encode().toUriString();
+        log.info(String.format("url = %s", url));
+        new RestTemplate().getForEntity(url, ResponseMessage.class);
     }
 }
